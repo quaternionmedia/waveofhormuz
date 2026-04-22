@@ -1,0 +1,18 @@
+# Build artefacts
+build/
+dep/
+*.o
+*.d
+*.dll
+*.so
+*.dylib
+
+# Distributable
+*.vcvplugin
+*.zip
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo

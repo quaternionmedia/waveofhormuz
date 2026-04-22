@@ -1,0 +1,22 @@
+{
+  "slug": "WaveOfHormuz",
+  "name": "Wave of Hormuz",
+  "version": "2.0.0",
+  "license": "GPL-3.0-or-later",
+  "brand": "Hormuz",
+  "author": "Peter Kagstrom",
+  "authorEmail": "peter.kagstrom@gmail.com",
+  "authorUrl": "",
+  "pluginUrl": "",
+  "manualUrl": "",
+  "sourceUrl": "",
+  "changelogUrl": "",
+  "modules": [
+    {
+      "slug": "WaveOfHormuz",
+      "name": "The Wave of Hormuz",
+      "description": "Strait-shaping square wave oscillator — open the strait, tighten the jacket, ride the passage",
+      "tags": ["Oscillator", "Waveshaper"]
+    }
+  ]
+}

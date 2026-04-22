@@ -5,8 +5,6 @@ A VCV Rack 2 oscillator that encodes the 2023–2025 Strait of Hormuz conflict a
 Default parameters reflect the real conflict timeline: **563 days** from Oct 7 2023 to Apr 22 2025, with a 22-day closure window at phase 0.336 (the MSC Aries seizure, Apr 13 – May 5 2024).
 
 <p align="center">
-  <img src="res/WaveOfHormuz.svg" height="380" alt="Panel artwork"/>
-  &nbsp;&nbsp;&nbsp;
   <img src="waveofhormuz.png" height="380" alt="Running in VCV Rack 2"/>
 </p>
 

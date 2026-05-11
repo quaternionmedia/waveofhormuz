@@ -5,7 +5,7 @@
 RACK_DIR ?= ../Rack-SDK
 
 SLUG = WaveOfHormuz
-VERSION = 2.0.0
+VERSION = 2.1.0
 
 FLAGS +=
 SOURCES += src/plugin.cpp src/WaveOfHormuz.cpp

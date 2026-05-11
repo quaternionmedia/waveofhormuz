@@ -28,17 +28,26 @@ PLUGIN_DIR="$SCRIPT_DIR"
 SLUG="$(grep -o '"slug": *"[^"]*"' "$PLUGIN_DIR/plugin.json" | head -1 | sed 's/.*: *"\(.*\)"/\1/')"
 VERSION="$(grep -o '"version": *"[^"]*"' "$PLUGIN_DIR/plugin.json" | head -1 | sed 's/.*: *"\(.*\)"/\1/')"
 
-# ── Auto-add MinGW to PATH, strongly preferring MSYS2 MINGW64 (MSVCRT) ──────
-# libRack.dll is built against MSVCRT + dynamic libstdc++.
-# Compiling with a UCRT-based gcc causes heap corruption at runtime because
-# strings/objects cross the DLL boundary with mismatched allocators.
-# MSYS2 mingw64 (x86_64-w64-mingw32, MSVCRT) is the correct toolchain.
+# ── Toolchain PATH — always prefer MSYS2 MINGW64 (MSVCRT) ───────────────────
+# libRack.dll is compiled against MSVCRT.  Compiling with UCRT (e.g. MSYS2
+# UCRT64 or Chocolatey MinGW) causes heap corruption at runtime because
+# allocations cross the DLL boundary with mismatched CRT heaps.
+#
+# We ALWAYS prepend MSYS2 MINGW64 to PATH when it exists, regardless of
+# whether another gcc is already on PATH.  Without this, make can end up
+# spawning a shell (Git sh.exe) whose own PATH resolves a different g++
+# that behaves differently from the same binary called in the build shell,
+# producing silent "Error 1" compile failures with no diagnostic output.
+if [[ -d /c/msys64/mingw64/bin ]]; then
+    export PATH="/c/msys64/mingw64/bin:$PATH"
+fi
+
+# Fallback candidates if MSYS2 is not installed
 MINGW_CANDIDATES=(
-    "/c/msys64/mingw64/bin"          # MSYS2 MINGW64  ← correct CRT (MSVCRT)
     "/c/msys64/usr/bin"
     "/c/ProgramData/mingw64/mingw64/bin"   # Chocolatey mingw (UCRT — will warn)
     "/c/mingw64/bin"
-    "/c/msys64/ucrt64/bin"           # MSYS2 UCRT64   ← wrong CRT (will warn)
+    "/c/msys64/ucrt64/bin"                 # MSYS2 UCRT64   ← wrong CRT (will warn)
 )
 if ! command -v gcc &>/dev/null; then
     for candidate in "${MINGW_CANDIDATES[@]}"; do
@@ -110,8 +119,17 @@ fi
 LOCALAPPDATA_UNIX="$(cygpath -u "${LOCALAPPDATA:-}" 2>/dev/null || echo "$HOME/AppData/Local")"
 INSTALL_DIR="$LOCALAPPDATA_UNIX/Rack2/plugins-win-x64"
 
-# Pass SLUG and VERSION on the command line so plugin.mk never needs jq
-MAKE_FLAGS="RACK_DIR=$RACK_DIR SLUG=$SLUG VERSION=$VERSION"
+# Pass SLUG and VERSION on the command line so plugin.mk never needs jq.
+#
+# Also force SHELL to MSYS2 bash when available.  Without this, make on
+# Windows finds Git's sh.exe as the shell; that shell has a different PATH
+# and g++ cannot locate its own standard-library headers, causing silent
+# "Error 1" compile failures with no diagnostic output.
+MAKE_SHELL=""
+if [[ -x /c/msys64/usr/bin/bash ]]; then
+    MAKE_SHELL="SHELL=/c/msys64/usr/bin/bash"
+fi
+MAKE_FLAGS="RACK_DIR=$RACK_DIR SLUG=$SLUG VERSION=$VERSION $MAKE_SHELL"
 
 # ── Targets ───────────────────────────────────────────────────────────────
 CMD="${1:-build}"
@@ -141,7 +159,16 @@ case "$CMD" in
     [[ -n "$DIST_FILE" ]] || { err "No plugin.dll or .vcvplugin found after build."; exit 1; }
 
     mkdir -p "$INSTALL_DIR/$SLUG"
-    cp "$DIST_FILE" "$INSTALL_DIR/$SLUG/"
+
+    # VCV Rack holds plugin.dll open while running — copy fails with
+    # "Device or resource busy" if Rack is not closed first.
+    warn "Close VCV Rack before this step to avoid a DLL lock error."
+    if ! cp "$DIST_FILE" "$INSTALL_DIR/$SLUG/" 2>/dev/null; then
+        err "Could not copy $(basename "$DIST_FILE") — VCV Rack may be running and holding the DLL open."
+        echo "       → Close VCV Rack completely and re-run:  ./build.sh install" >&2
+        exit 1
+    fi
+
     # Copy resources too if present
     [[ -d "$PLUGIN_DIR/res" ]] && cp -r "$PLUGIN_DIR/res" "$INSTALL_DIR/$SLUG/"
     [[ -f "$PLUGIN_DIR/plugin.json" ]] && cp "$PLUGIN_DIR/plugin.json" "$INSTALL_DIR/$SLUG/"

@@ -1,40 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  The Wave of Hormuz — panel (14 HP = 71.12 × 128.5 mm)
+  The Wave of Hormuz — panel (16 HP = 81.28 × 128.5 mm)  v2.2.0
 
-  Waveform: single cycle, data-accurate dual-closure square wave.
-    OPEN = HIGH (+1),  CLOSED = LOW (−1)
-    947-day timeline (Oct 7 2023 – May 11 2026):
-      Phase 0.0000 – 0.1996  (189 days)  OPEN
-      Phase 0.1996 – 0.2228  ( 22 days)  CLOSED — MSC Aries seizure (Apr–May 2024) [C1]
-      Phase 0.2228 – 0.9261  (666 days)  OPEN
-      Phase 0.9261 – 1.0000  ( 70 days)  CLOSED — renewed blockade (Mar 2026–present) [C2]
+  4 equal columns  x: 10.16  30.48  50.80  71.12
+  knot speed x=20.32  gulf/dry x=60.96  (same row, same size)
 
-    Display box x=3.5–67.6 (64.1 mm wide), phase→x = 3.5 + phase×64.1
-      C1 start x=16.30  C1 end x=17.78  (1.48 mm wide — accurate, not exaggerated)
-      C2 start x=62.87  C2 end x=67.60  (4.73 mm wide — ongoing)
+  Vertical zones (mm from top):
+    0–17.5   title + waveform
+   17.5–35.5 knot speed / gulf dry row
+   35.5–68.5 closure knobs + cv jacks
+   68.5–101.5 effect knobs + cv jacks
+  101.5–128.5 i/o  (inputs y=111, outputs y=121)
 
-  4-column knob layout:
-    Columns x: 14.22, 28.44, 42.67, 56.89 mm   Centre: 35.56 mm
-
-  I/O:  6 inputs  x: 7.62 18.80 29.98 41.16 52.34 63.50  y=110
-        4 outputs x: 14.22 28.44 42.67 56.89              y=121
+  Waveform: single cycle, data-accurate (947-day, Oct 2023–May 2026)
+    Box x=3.5–77.8 (74.3 mm wide)  phase→x = 3.5 + phase×74.3
+    C1 start x=18.33  C1 end x=20.05  (1.72 mm — accurate hairline)
+    C2 start x=72.31  C2 end x=77.80  (5.49 mm — ongoing)
 
   Colour palette:
     #0e1f2e / #07121b  panel gradient
     #06101a            side rails
     #0d2435            title / section tint
     #e8c034            gold  (title, waveform line)
-    #3aa898            teal  (accent, PASSAGE label)
+    #3aa898            teal  (accent, passage)
     #8ecfcf            light teal  (primary knob labels)
-    #5a8a9a            muted teal  (secondary labels, jack labels)
-    #3a6878            dim teal  (range / sub labels)
+    #5a8a9a            muted teal  (jack names, sub-labels)
+    #3a6878            dim teal  (range / secondary text)
     #2a5060            knob halo border
     #c03030            red  (closure fills)
 -->
 <svg xmlns="http://www.w3.org/2000/svg"
-     width="71.12mm" height="128.5mm"
-     viewBox="0 0 71.12 128.5">
+     width="81.28mm" height="128.5mm"
+     viewBox="0 0 81.28 128.5">
 
   <defs>
     <linearGradient id="panelBg" x1="0" y1="0" x2="0" y2="128.5"
@@ -44,273 +41,283 @@
     </linearGradient>
   </defs>
 
-  <!-- ── Background ──────────────────────────────────────────────────────── -->
-  <rect width="71.12" height="128.5" fill="url(#panelBg)"/>
+  <!-- ── background ──────────────────────────────────────────────────────── -->
+  <rect width="81.28" height="128.5" fill="url(#panelBg)"/>
   <rect x="0"     y="0" width="2.0" height="128.5" fill="#06101a"/>
-  <rect x="69.12" y="0" width="2.0" height="128.5" fill="#06101a"/>
+  <rect x="79.28" y="0" width="2.0" height="128.5" fill="#06101a"/>
 
-  <!-- ── Title area ───────────────────────────────────────────────────────── -->
-  <rect x="2.0" y="0" width="67.12" height="17.5" fill="#0d2435" rx="0.3"/>
+  <!-- ── title area ───────────────────────────────────────────────────────── -->
+  <rect x="2" y="0" width="77.28" height="17.5" fill="#0d2435" rx="0.3"/>
 
-  <text x="35.56" y="6.2" text-anchor="middle"
+  <text x="40.64" y="6.2" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="3.2" font-weight="bold"
-        fill="#e8c034" letter-spacing="0.4">THE WAVE OF HORMUZ</text>
+        font-size="3.4" font-weight="bold"
+        fill="#e8c034" letter-spacing="0.4">the wave of hormuz</text>
 
-  <!-- ── Waveform display — single cycle, data-accurate ──────────────────── -->
+  <!-- ── waveform — single cycle, data-accurate ───────────────────────────── -->
   <!--
-    Background box
+    Box x=3.5–77.8 (74.3 mm wide), y=8.5–15.5
+    HIGH y=9.2  LOW y=15.0
+
+    phase 0.000  → x=3.50   (open)
+    phase 0.1996 → x=18.33  c1 start (Apr 13 2024)
+    phase 0.2228 → x=20.05  c1 end   (May 5  2024) — 1.72 mm hairline
+    phase 0.9261 → x=72.31  c2 start (Mar 2  2026)
+    phase 1.000  → x=77.80  present  (May 11 2026) — 5.49 mm block
   -->
-  <rect x="3.5" y="8.5" width="64.1" height="7.0" fill="#060f18" rx="0.4"/>
+  <rect x="3.5" y="8.5" width="74.3" height="7.0" fill="#060f18" rx="0.4"/>
+  <line x1="3.5" y1="15.0" x2="77.8" y2="15.0" stroke="#1c3545" stroke-width="0.25"/>
 
-  <!-- Floor reference -->
-  <line x1="3.5" y1="15.0" x2="67.6" y2="15.0"
-        stroke="#1c3545" stroke-width="0.25"/>
+  <!-- open fills -->
+  <rect x="3.50"  y="9.2" width="14.83" height="5.8" fill="#3aa898" opacity="0.18"/>
+  <rect x="20.05" y="9.2" width="52.26" height="5.8" fill="#3aa898" opacity="0.18"/>
 
-  <!-- OPEN fills: teal -->
-  <rect x="3.50"  y="9.2" width="12.80" height="5.8" fill="#3aa898" opacity="0.18"/>
-  <rect x="17.78" y="9.2" width="45.09" height="5.8" fill="#3aa898" opacity="0.18"/>
+  <!-- closed fills -->
+  <rect x="18.33" y="9.2" width="1.72"  height="5.8" fill="#c03030" opacity="0.55"/>
+  <rect x="72.31" y="9.2" width="5.49"  height="5.8" fill="#c03030" opacity="0.40"/>
 
-  <!-- CLOSED fills: red  (C1 is a hairline at 1.48 mm; C2 is the right-side block) -->
-  <rect x="16.30" y="9.2" width="1.48"  height="5.8" fill="#c03030" opacity="0.50"/>
-  <rect x="62.87" y="9.2" width="4.73"  height="5.8" fill="#c03030" opacity="0.40"/>
-
-  <!-- Waveform polyline — gold, data-accurate single cycle -->
+  <!-- waveform polyline -->
   <polyline
-    points="3.50,9.2  16.30,9.2  16.30,15.0  17.78,15.0  17.78,9.2
-             62.87,9.2  62.87,15.0  67.60,15.0"
+    points="3.50,9.2  18.33,9.2  18.33,15.0  20.05,15.0  20.05,9.2
+             72.31,9.2  72.31,15.0  77.80,15.0"
     stroke="#e8c034" stroke-width="0.65" fill="none" stroke-linejoin="miter"/>
 
-  <!-- Vertical tick markers at closure edges -->
-  <line x1="16.30" y1="8.5" x2="16.30" y2="15.8"
+  <!-- closure tick markers -->
+  <line x1="18.33" y1="8.5" x2="18.33" y2="15.8"
         stroke="#c03030" stroke-width="0.30" stroke-dasharray="0.5,0.4"/>
-  <line x1="17.78" y1="8.5" x2="17.78" y2="15.8"
+  <line x1="20.05" y1="8.5" x2="20.05" y2="15.8"
         stroke="#5a8a9a" stroke-width="0.25" stroke-dasharray="0.4,0.4"/>
-  <line x1="62.87" y1="8.5" x2="62.87" y2="15.8"
+  <line x1="72.31" y1="8.5" x2="72.31" y2="15.8"
         stroke="#c03030" stroke-width="0.35" stroke-dasharray="0.6,0.5"/>
 
-  <!-- C1 / C2 annotation labels (SVG text — for preview tools; VCV drops text) -->
-  <text x="14.0"  y="8.0" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="1.6" fill="#c07070">C1</text>
-  <text x="65.24" y="8.0" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="1.6" fill="#c07070">C2</text>
+  <!-- c1 / c2 annotations (svg-preview only; vcv drops text) -->
+  <text x="16.5"  y="8.0" text-anchor="middle"
+        font-family="Arial" font-size="1.5" fill="#c07070">c1</text>
+  <text x="75.1"  y="8.0" text-anchor="middle"
+        font-family="Arial" font-size="1.5" fill="#c07070">c2</text>
 
-  <!-- Decorative wave divider under title area -->
-  <path d="M2,17.5 C8,15.2 13,19.5 18,17.5 C23,15.2 28,19.5 33,17.5
-           C38,15.2 43,19.5 48,17.5 C53,15.2 58,19.5 63,17.5
-           C67,15.2 70,19.5 69.1,17.5"
+  <!-- wave divider -->
+  <path d="M2,17.5 C8,15.2 12,19.5 18,17.5 C24,15.2 28,19.5 34,17.5
+           C40,15.2 44,19.5 50,17.5 C56,15.2 60,19.5 66,17.5
+           C72,15.2 76,19.5 79.28,17.5"
         stroke="#3aa898" stroke-width="0.7" fill="none" opacity="0.75"/>
 
-  <!-- ── KNOT SPEED (large knob, centred at 35.56) ───────────────────────── -->
-  <circle cx="35.56" cy="25.0" r="8.0"
-          fill="#0c1e2c" stroke="#2a5060" stroke-width="0.8"/>
+  <!-- ── knot speed (x=20.32) + gulf/dry (x=60.96) — same row, same size ── -->
+  <circle cx="20.32" cy="27" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
+  <circle cx="60.96" cy="27" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
 
-  <text x="35.56" y="19.3" text-anchor="middle"
+  <text x="20.32" y="20.5" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.5" font-weight="bold" fill="#8ecfcf">KNOT SPEED</text>
-  <text x="13.0" y="25.6" text-anchor="middle"
+        font-size="2.3" font-weight="bold" fill="#8ecfcf">knot speed</text>
+  <text x="7.0"  y="33.0" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="1.8" fill="#3a6878">&#x2212;4<tspan font-size="1.4">OCT</tspan></text>
-  <text x="58.1" y="25.6" text-anchor="middle"
+        font-size="1.7" fill="#3a6878">&#x2212;4 oct</text>
+  <text x="33.5" y="33.0" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="1.8" fill="#3a6878">+4<tspan font-size="1.4">OCT</tspan></text>
+        font-size="1.7" fill="#3a6878">+4 oct</text>
 
-  <!-- Divider -->
-  <line x1="4" y1="33.5" x2="67.1" y2="33.5" stroke="#1c3a4a" stroke-width="0.5"/>
+  <text x="60.96" y="20.5" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="2.3" font-weight="bold" fill="#8ecfcf">gulf / dry</text>
+  <text x="48.5" y="33.0" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.7" fill="#3a6878">dry</text>
+  <text x="73.5" y="33.0" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.7" fill="#3a6878">wet</text>
 
-  <!-- ── CLOSURE WINDOWS ROW  y=47 ────────────────────────────────────────── -->
-  <!--  OPENING CEREMONY | STRAIT JACKET | SANCTIONS | EMBARGO  -->
+  <line x1="4" y1="35.5" x2="77.28" y2="35.5" stroke="#1c3a4a" stroke-width="0.5"/>
 
-  <text x="35.56" y="36.8" text-anchor="middle"
+  <!-- ── closure windows — knobs y=53, cv jacks y=66 ──────────────────────── -->
+  <rect x="2" y="35.5" width="77.28" height="33" fill="#060e17" opacity="0.45"/>
+  <text x="40.64" y="39.0" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="1.7" fill="#3a6878" letter-spacing="0.3">&#x2014; CLOSURE WINDOWS &#x2014;</text>
+        font-size="1.8" fill="#3a6878" letter-spacing="0.3">&#x2014; closure windows &#x2014;</text>
 
-  <!-- knob halos -->
-  <circle cx="14.22" cy="47.0" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
-  <circle cx="28.44" cy="47.0" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
-  <circle cx="42.67" cy="47.0" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
-  <circle cx="56.89" cy="47.0" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
+  <circle cx="10.16" cy="53" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
+  <circle cx="30.48" cy="53" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
+  <circle cx="50.80" cy="53" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
+  <circle cx="71.12" cy="53" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
 
-  <!-- labels above knobs -->
-  <text x="14.22" y="39.2" text-anchor="middle"
+  <text x="10.16" y="43.0" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.1" font-weight="bold" fill="#8ecfcf">OPENING</text>
-  <text x="14.22" y="42.0" text-anchor="middle"
+        font-size="2.1" font-weight="bold" fill="#8ecfcf">opening</text>
+  <text x="10.16" y="46.3" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.1" font-weight="bold" fill="#8ecfcf">CEREMONY</text>
+        font-size="2.1" font-weight="bold" fill="#8ecfcf">ceremony</text>
 
-  <text x="28.44" y="39.2" text-anchor="middle"
+  <text x="30.48" y="43.0" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.1" font-weight="bold" fill="#8ecfcf">STRAIT</text>
-  <text x="28.44" y="42.0" text-anchor="middle"
+        font-size="2.1" font-weight="bold" fill="#8ecfcf">strait</text>
+  <text x="30.48" y="46.3" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.1" font-weight="bold" fill="#8ecfcf">JACKET</text>
+        font-size="2.1" font-weight="bold" fill="#8ecfcf">jacket</text>
 
-  <text x="42.67" y="40.0" text-anchor="middle"
+  <text x="50.80" y="44.7" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.1" font-weight="bold" fill="#8ecfcf">SANCTIONS</text>
+        font-size="2.1" font-weight="bold" fill="#8ecfcf">sanctions</text>
 
-  <text x="56.89" y="40.0" text-anchor="middle"
+  <text x="71.12" y="44.7" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.1" font-weight="bold" fill="#8ecfcf">EMBARGO</text>
+        font-size="2.1" font-weight="bold" fill="#8ecfcf">embargo</text>
 
-  <!-- sub-labels below knobs -->
-  <text x="14.22" y="54.5" text-anchor="middle"
+  <text x="10.16" y="60.5" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="1.8" fill="#5a8a9a">c1 start</text>
-  <text x="28.44" y="54.5" text-anchor="middle"
+        font-size="1.7" fill="#5a8a9a">c1 start</text>
+  <text x="30.48" y="60.5" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="1.8" fill="#5a8a9a">c1 width</text>
-  <text x="42.67" y="54.5" text-anchor="middle"
+        font-size="1.7" fill="#5a8a9a">c1 width</text>
+  <text x="50.80" y="60.5" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="1.8" fill="#5a8a9a">c2 start</text>
-  <text x="56.89" y="54.5" text-anchor="middle"
+        font-size="1.7" fill="#5a8a9a">c2 start</text>
+  <text x="71.12" y="60.5" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="1.8" fill="#5a8a9a">c2 width</text>
+        font-size="1.7" fill="#5a8a9a">c2 width</text>
 
-  <!-- Divider -->
-  <line x1="4" y1="57.5" x2="67.1" y2="57.5" stroke="#1c3a4a" stroke-width="0.5"/>
+  <text x="10.16" y="63.2" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.6" fill="#3a6878">open</text>
+  <text x="30.48" y="63.2" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.6" fill="#3a6878">jckt</text>
+  <text x="50.80" y="63.2" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.6" fill="#3a6878">lock</text>
+  <text x="71.12" y="63.2" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.6" fill="#3a6878">emgo</text>
 
-  <!-- ── EFFECTS ROW  y=71 ─────────────────────────────────────────────────── -->
-  <!--  OIL SLICK | CHOKE POINT | PERSIAN TILT | TANKER  -->
+  <!-- closure cv jack halos  y=66 -->
+  <circle cx="10.16" cy="66" r="2.5" fill="#080e18" stroke="#1a3048" stroke-width="0.5"/>
+  <circle cx="30.48" cy="66" r="2.5" fill="#080e18" stroke="#1a3048" stroke-width="0.5"/>
+  <circle cx="50.80" cy="66" r="2.5" fill="#080e18" stroke="#1a3048" stroke-width="0.5"/>
+  <circle cx="71.12" cy="66" r="2.5" fill="#080e18" stroke="#1a3048" stroke-width="0.5"/>
 
-  <!-- knob halos -->
-  <circle cx="14.22" cy="71.0" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
-  <circle cx="28.44" cy="71.0" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
-  <circle cx="42.67" cy="71.0" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
-  <circle cx="56.89" cy="71.0" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
+  <line x1="4" y1="68.5" x2="77.28" y2="68.5" stroke="#1c3a4a" stroke-width="0.5"/>
 
-  <!-- labels above knobs -->
-  <text x="14.22" y="60.0" text-anchor="middle"
+  <!-- ── effects — knobs y=84, cv jacks y=98 ─────────────────────────────── -->
+  <text x="10.16" y="74.0" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.1" font-weight="bold" fill="#8ecfcf">OIL SLICK</text>
+        font-size="2.1" font-weight="bold" fill="#8ecfcf">oil</text>
+  <text x="10.16" y="77.3" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="2.1" font-weight="bold" fill="#8ecfcf">slick</text>
 
-  <text x="28.44" y="60.0" text-anchor="middle"
+  <text x="30.48" y="74.0" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.1" font-weight="bold" fill="#8ecfcf">CHOKE</text>
-  <text x="28.44" y="62.8" text-anchor="middle"
+        font-size="2.1" font-weight="bold" fill="#8ecfcf">choke</text>
+  <text x="30.48" y="77.3" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.1" font-weight="bold" fill="#8ecfcf">POINT</text>
+        font-size="2.1" font-weight="bold" fill="#8ecfcf">point</text>
 
-  <text x="42.67" y="60.0" text-anchor="middle"
+  <text x="50.80" y="74.0" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.1" font-weight="bold" fill="#8ecfcf">PERSIAN</text>
-  <text x="42.67" y="62.8" text-anchor="middle"
+        font-size="2.1" font-weight="bold" fill="#8ecfcf">persian</text>
+  <text x="50.80" y="77.3" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.1" font-weight="bold" fill="#8ecfcf">TILT</text>
+        font-size="2.1" font-weight="bold" fill="#8ecfcf">tilt</text>
 
-  <text x="56.89" y="60.0" text-anchor="middle"
+  <text x="71.12" y="75.7" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.1" font-weight="bold" fill="#8ecfcf">TANKER</text>
+        font-size="2.1" font-weight="bold" fill="#8ecfcf">tanker</text>
 
-  <!-- sub-labels below knobs -->
-  <text x="14.22" y="78.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="1.8" fill="#5a8a9a">slew / LP</text>
-  <text x="28.44" y="78.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="1.8" fill="#5a8a9a">tanh drive</text>
-  <text x="42.67" y="78.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="1.8" fill="#5a8a9a">saw &#x00AB; tri</text>
-  <text x="56.89" y="78.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="1.8" fill="#5a8a9a">amplitude</text>
+  <circle cx="10.16" cy="84" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
+  <circle cx="30.48" cy="84" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
+  <circle cx="50.80" cy="84" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
+  <circle cx="71.12" cy="84" r="5.2" fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
 
-  <!-- Divider -->
-  <line x1="4" y1="81.0" x2="67.1" y2="81.0" stroke="#1c3a4a" stroke-width="0.5"/>
-
-  <!-- ── GULF / DRY (small knob, centred) ─────────────────────────────────── -->
-  <circle cx="35.56" cy="93.0" r="3.8"
-          fill="#0c1e2c" stroke="#2a5060" stroke-width="0.6"/>
-
-  <text x="35.56" y="84.5" text-anchor="middle"
+  <text x="10.16" y="91.5" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.3" font-weight="bold" fill="#8ecfcf">GULF / DRY</text>
-  <text x="20.5" y="93.5" text-anchor="middle"
+        font-size="1.7" fill="#5a8a9a">slew / lp</text>
+  <text x="30.48" y="91.5" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="1.8" fill="#3a6878">DRY</text>
-  <text x="50.6" y="93.5" text-anchor="middle"
+        font-size="1.7" fill="#5a8a9a">tanh drive</text>
+  <text x="50.80" y="91.5" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="1.8" fill="#3a6878">WET</text>
+        font-size="1.7" fill="#5a8a9a">saw &#x00AB; tri</text>
+  <text x="71.12" y="91.5" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.7" fill="#5a8a9a">amplitude</text>
 
-  <!-- Divider -->
-  <line x1="4" y1="100.0" x2="67.1" y2="100.0" stroke="#1c3a4a" stroke-width="0.5"/>
+  <text x="10.16" y="94.7" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.6" fill="#3a6878">slck</text>
+  <text x="30.48" y="94.7" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.6" fill="#3a6878">chok</text>
+  <text x="50.80" y="94.7" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.6" fill="#3a6878">tilt</text>
+  <text x="71.12" y="94.7" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.6" fill="#3a6878">tnk</text>
 
-  <!-- ── I/O Section ───────────────────────────────────────────────────────── -->
-  <rect x="2.0" y="103.0" width="67.12" height="25.5" fill="#070e18" rx="0.3"/>
-  <line x1="2.0" y1="103.0" x2="69.12" y2="103.0"
+  <!-- effect cv jack halos  y=98 -->
+  <circle cx="10.16" cy="98" r="2.5" fill="#080e18" stroke="#1a3048" stroke-width="0.5"/>
+  <circle cx="30.48" cy="98" r="2.5" fill="#080e18" stroke="#1a3048" stroke-width="0.5"/>
+  <circle cx="50.80" cy="98" r="2.5" fill="#080e18" stroke="#1a3048" stroke-width="0.5"/>
+  <circle cx="71.12" cy="98" r="2.5" fill="#080e18" stroke="#1a3048" stroke-width="0.5"/>
+
+  <!-- ── i/o section ───────────────────────────────────────────────────────── -->
+  <rect x="2" y="101.5" width="77.28" height="27.0" fill="#070e18" rx="0.3"/>
+  <line x1="2" y1="101.5" x2="79.28" y2="101.5"
         stroke="#3aa898" stroke-width="0.6" opacity="0.8"/>
 
-  <!-- Input jack halos  (6 inputs, y=110)
-       x: 7.62, 18.80, 29.98, 41.16, 52.34, 63.50  -->
-  <circle cx=" 7.62" cy="110" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
-  <circle cx="18.80" cy="110" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
-  <circle cx="29.98" cy="110" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
-  <circle cx="41.16" cy="110" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
-  <circle cx="52.34" cy="110" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
-  <circle cx="63.50" cy="110" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
-
-  <!-- Output jack halos  (4 outputs, y=121)
-       x: 14.22, 28.44, 42.67, 56.89  -->
-  <circle cx="14.22" cy="121" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
-  <circle cx="28.44" cy="121" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
-  <circle cx="42.67" cy="121" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
-  <circle cx="56.89" cy="121" r="3.0" fill="#0c1e2c" stroke="#2a6050" stroke-width="0.8"/>
-
-  <!-- Input labels (above jacks, y=106.5) -->
-  <text x=" 7.62" y="106.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="2.0" fill="#5a8a9a">V/OCT</text>
-  <text x="18.80" y="106.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="2.0" fill="#5a8a9a">TIDE</text>
-  <text x="29.98" y="106.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="2.0" fill="#5a8a9a">SWELL</text>
-  <text x="41.16" y="106.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="2.0" fill="#5a8a9a">OPEN</text>
-  <text x="52.34" y="106.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="2.0" fill="#5a8a9a">LOCK</text>
-  <text x="63.50" y="106.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="2.0" fill="#5a8a9a">TILT</text>
-
-  <!-- Input sub-labels (below jacks, y=115) -->
-  <text x=" 7.62" y="115.0" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="1.6" fill="#3a6878">pitch</text>
-  <text x="18.80" y="115.0" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="1.6" fill="#3a6878">sync</text>
-  <text x="29.98" y="115.0" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="1.6" fill="#3a6878">fm</text>
-  <text x="41.16" y="115.0" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="1.6" fill="#3a6878">c1 cv</text>
-  <text x="52.34" y="115.0" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="1.6" fill="#3a6878">c2 cv</text>
-  <text x="63.50" y="115.0" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="1.6" fill="#3a6878">shp cv</text>
-
-  <!-- Output secondary labels (above output jacks, y=117.5) -->
-  <text x="14.22" y="117.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="1.6" fill="#3a6878">trig</text>
-  <text x="28.44" y="117.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="1.6" fill="#3a6878">gate</text>
-  <text x="42.67" y="117.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="1.6" fill="#3a6878">gate</text>
-  <text x="56.89" y="117.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="1.6" fill="#3a6878">audio</text>
-
-  <!-- Output primary labels (below output jacks, y=125.5) -->
-  <text x="14.22" y="125.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="2.0" fill="#5a8a9a">EOC</text>
-  <text x="28.44" y="125.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="2.0" fill="#5a8a9a">C1</text>
-  <text x="42.67" y="125.5" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="2.0" fill="#5a8a9a">C2</text>
-  <text x="56.89" y="125.5" text-anchor="middle"
+  <text x="10.16" y="105.5" text-anchor="middle"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="2.2" font-weight="bold" fill="#3aa898">PASSAGE</text>
+        font-size="2.1" fill="#5a8a9a">v/oct</text>
+  <text x="30.48" y="105.5" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="2.1" fill="#5a8a9a">tide</text>
+  <text x="50.80" y="105.5" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="2.1" fill="#5a8a9a">swell</text>
+  <text x="71.12" y="105.5" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="2.1" fill="#5a8a9a">dry cv</text>
 
-  <!-- Subtle bottom wave decoration -->
-  <path d="M2,126.5 C8,124.5 13,128 18,126.5 C23,124.5 28,128 33,126.5
-           C38,124.5 43,128 48,126.5 C53,124.5 58,128 63,126.5
-           C67,124.5 70,128 69.1,126.5"
+  <!-- input jack halos  y=111 -->
+  <circle cx="10.16" cy="111" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
+  <circle cx="30.48" cy="111" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
+  <circle cx="50.80" cy="111" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
+  <circle cx="71.12" cy="111" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
+
+  <text x="10.16" y="116.5" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.9" fill="#3a6878">trig</text>
+  <text x="30.48" y="116.5" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.9" fill="#3a6878">gate</text>
+  <text x="50.80" y="116.5" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.9" fill="#3a6878">gate</text>
+  <text x="71.12" y="116.5" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="1.9" fill="#3a6878">audio</text>
+
+  <!-- output jack halos  y=121 -->
+  <circle cx="10.16" cy="121" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
+  <circle cx="30.48" cy="121" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
+  <circle cx="50.80" cy="121" r="2.8" fill="#0c1e2c" stroke="#1e4050" stroke-width="0.5"/>
+  <circle cx="71.12" cy="121" r="3.0" fill="#0c1e2c" stroke="#2a6050" stroke-width="0.8"/>
+
+  <text x="10.16" y="125.5" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="2.1" fill="#5a8a9a">eoc</text>
+  <text x="30.48" y="125.5" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="2.1" fill="#5a8a9a">c1</text>
+  <text x="50.80" y="125.5" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="2.1" fill="#5a8a9a">c2</text>
+  <text x="71.12" y="125.5" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="2.2" font-weight="bold" fill="#3aa898">passage</text>
+
+  <!-- bottom wave decoration -->
+  <path d="M2,126.5 C8,124.5 12,128 18,126.5 C24,124.5 28,128 34,126.5
+           C40,124.5 44,128 50,126.5 C56,124.5 60,128 66,126.5
+           C72,124.5 76,128 79.28,126.5"
         stroke="#3aa898" stroke-width="0.4" fill="none" opacity="0.35"/>
 
 </svg>

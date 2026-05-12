@@ -70,48 +70,58 @@ Restart VCV Rack to pick up the updated plugin.
 | Silent `Error 1` compile failure, no diagnostic shown | `make` found Git's `sh.exe` as its shell; that shell's PATH excludes MSYS2, so `g++` can't find its own standard-library headers | `build.sh` now passes `SHELL=/c/msys64/usr/bin/bash` to `make` automatically when MSYS2 is present — always build via `./build.sh` rather than bare `make` |
 | Compiler errors don't appear in terminal output | On Windows, `make`'s stderr from `g++` can be swallowed by the Git shell | Run the failing `g++` command directly in **PowerShell** (`& g++ ... 2>&1`) to see full diagnostics |
 | Module crashes Rack on load | Wrong CRT in the build toolchain (UCRT vs MSVCRT) | Use the MSYS2 **MINGW64** shell, not UCRT64 or Chocolatey MinGW. `build.sh` prefers `/c/msys64/mingw64/bin` |
-| Closure windows overlap | C1 always takes priority over C2 in the DSP when the windows share a phase region | Intended — dial the windows apart; OPENING CEREMONY + STRAIT JACKET must not overlap SANCTIONS |
+| Closure windows overlap | C1 always takes priority over C2 in the DSP when the windows share a phase region | Intended — dial the windows apart; opening ceremony + strait jacket must not overlap sanctions |
 
 ---
 
 ## Module reference
 
-**14 HP.** One module: *The Wave of Hormuz*.
+**16 HP.** One module: *The Wave of Hormuz*. All panel labels are lowercase.
 
 ### Knobs
 
-| Name | Range | Default | Pun | Function |
+All 10 knobs are the same size. **knot speed** and **gulf / dry** share the top row.
+
+| Label | Range | Default | Pun | Function |
 |---|---|---|---|---|
-| **KNOT SPEED** | −4…+4 oct | 0 (C4) | nautical knots | Base pitch; adds to V/OCT and SWELL CVs |
-| **OPENING CEREMONY** | 0…1 | 189/947 ≈ 0.200 | strait opening | Phase start of closure 1 (C1) |
-| **STRAIT JACKET** | 0…1 | 22/947 ≈ 0.023 | straightjacket / strait | Width of closure 1 (C1) |
-| **SANCTIONS** | 0…1 | 877/947 ≈ 0.926 | international sanctions | Phase start of closure 2 (C2) |
-| **EMBARGO** | 0…1 | 70/947 ≈ 0.074 | embargo duration | Width of closure 2 (C2) |
-| **OIL SLICK** | 0…1 | 0 | oil-tanker spill | One-pole LP smooths hard square edges |
-| **CHOKE POINT** | 0…1 | 0 | strategic chokepoint | Tanh soft-clip; drive 1× → 10× (gain-compensated) |
-| **PERSIAN TILT** | −1…+1 | 0 | Persian Gulf | Shape inside closures: 0 = flat −1, +1 = triangle peak, −1 = rising ramp |
-| **TANKER** | 0…1 | 1 | oil-tanker cargo | Output level (1.0 = ±5 V peak) |
-| **GULF / DRY** | 0…1 | 1 | Gulf of Oman | Crossfade: 0 = plain 50% square, 1 = dual-closure wave |
+| **knot speed** | −4…+4 oct | 0 (C4) | nautical knots | Base pitch; adds to v/oct and swell CVs |
+| **opening ceremony** | 0…1 | 189/947 ≈ 0.200 | strait opening | Phase start of closure 1 (C1) |
+| **strait jacket** | 0…1 | 22/947 ≈ 0.023 | straightjacket / strait | Width of closure 1 (C1) |
+| **sanctions** | 0…1 | 877/947 ≈ 0.926 | international sanctions | Phase start of closure 2 (C2) |
+| **embargo** | 0…1 | 70/947 ≈ 0.074 | embargo duration | Width of closure 2 (C2) |
+| **oil slick** | 0…1 | 0 | oil-tanker spill | One-pole LP smooths hard square edges |
+| **choke point** | 0…1 | 0 | strategic chokepoint | Tanh soft-clip; drive 1× → 10× (gain-compensated) |
+| **persian tilt** | −1…+1 | 0 | Persian Gulf | Shape inside closures: 0 = flat, +1 = triangle peak, −1 = rising ramp |
+| **tanker** | 0…1 | 1 | oil-tanker cargo | Output level (1.0 = ±5 V peak) |
+| **gulf / dry** | 0…1 | 1 | Gulf of Oman | Crossfade: 0 = plain 50% square, 1 = dual-closure wave |
 
 ### Inputs
 
-| Jack | Signal | Function |
-|---|---|---|
-| **V/OCT** | ±5 V | 1 V/oct pitch CV, sums with KNOT SPEED |
-| **TIDE** | Gate/Trig | Hard sync — rising edge resets phase to 0 |
-| **SWELL** | ±5 V | FM — adds ¼ V/oct per volt to pitch |
-| **OPEN** | ±5 V | CV for OPENING CEREMONY (C1 start) — adds 0.1/V |
-| **LOCK** | ±5 V | CV for SANCTIONS (C2 start) — adds 0.1/V |
-| **TILT** | ±5 V | CV for PERSIAN TILT — adds 0.2/V, clamped ±1; applies to **both** C1 and C2 |
+12 inputs total. All parameter CVs add 0.1× per volt and are clamped to the knob's valid range, except **tilt** (0.2×/V, clamped ±1).
+
+| Jack | Location | Signal | Function |
+|---|---|---|---|
+| **v/oct** | I/O row | ±5 V | 1 V/oct pitch CV |
+| **tide** | I/O row | Gate/Trig | Hard sync — rising edge resets phase to 0 |
+| **swell** | I/O row | ±5 V | FM — adds ¼ V/oct per volt to pitch |
+| **dry cv** | I/O row | ±5 V | CV for gulf / dry mix |
+| **open** | Closure CV row | ±5 V | CV for opening ceremony (C1 start) |
+| **jckt** | Closure CV row | ±5 V | CV for strait jacket (C1 width) |
+| **lock** | Closure CV row | ±5 V | CV for sanctions (C2 start) |
+| **emgo** | Closure CV row | ±5 V | CV for embargo (C2 width) |
+| **slck** | Effect CV row | ±5 V | CV for oil slick (LP filter) |
+| **chok** | Effect CV row | ±5 V | CV for choke point (tanh drive) |
+| **tilt** | Effect CV row | ±5 V | CV for persian tilt — applies to **both** C1 and C2 |
+| **tnk** | Effect CV row | ±5 V | CV for tanker (output level) |
 
 ### Outputs
 
 | Jack | Signal | Function |
 |---|---|---|
-| **EOC** | 0 / 10 V | 1 ms trigger at the end of every cycle |
-| **C1** | 0 / 10 V | Gate — high while inside closure 1 (yellow LED) |
-| **C2** | 0 / 10 V | Gate — high while inside closure 2 (red LED) |
-| **PASSAGE** | ±5 V audio | Main oscillator output (green LED = level) |
+| **eoc** | 0 / 10 V | 1 ms trigger at the end of every cycle |
+| **c1** | 0 / 10 V | Gate — high while inside closure 1 (yellow LED) |
+| **c2** | 0 / 10 V | Gate — high while inside closure 2 (red LED) |
+| **passage** | ±5 V audio | Main oscillator output (green LED = level) |
 
 ---
 
@@ -145,7 +155,7 @@ WaveOfHormuz/
 │   ├── plugin.cpp       init() — registers the module
 │   └── WaveOfHormuz.cpp all DSP, widget, and label code
 └── res/
-    └── WaveOfHormuz.svg panel artwork (14 HP, dark-navy / teal / gold)
+    └── WaveOfHormuz.svg panel artwork (16 HP, dark-navy / teal / gold)
 ```
 
 ---

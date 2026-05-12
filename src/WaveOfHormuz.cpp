@@ -36,16 +36,16 @@ static void msvcrt_free(void* p) {
 }
 #pragma GCC diagnostic pop
 
-void* operator new  (size_t n)                  { void* p = msvcrt_malloc(n); if (!p) throw std::bad_alloc(); return p; }
-void* operator new[](size_t n)                  { void* p = msvcrt_malloc(n); if (!p) throw std::bad_alloc(); return p; }
-void  operator delete  (void* p) noexcept       { msvcrt_free(p); }
-void  operator delete[](void* p) noexcept       { msvcrt_free(p); }
+void* operator new  (size_t n)                    { void* p = msvcrt_malloc(n); if (!p) throw std::bad_alloc(); return p; }
+void* operator new[](size_t n)                    { void* p = msvcrt_malloc(n); if (!p) throw std::bad_alloc(); return p; }
+void  operator delete  (void* p) noexcept         { msvcrt_free(p); }
+void  operator delete[](void* p) noexcept         { msvcrt_free(p); }
 void  operator delete  (void* p, size_t) noexcept { msvcrt_free(p); }
 void  operator delete[](void* p, size_t) noexcept { msvcrt_free(p); }
 #endif
 
 // ---------------------------------------------------------------------------
-// The Wave of Hormuz — strait-shaping dual-closure oscillator  (14 HP)
+// The Wave of Hormuz — strait-shaping dual-closure oscillator  (16 HP)
 //
 // The base waveform encodes the 2023–2026 Strait of Hormuz conflict as a
 // square wave:  +1 = OPEN (free transit),  −1 = CLOSED (blockade/seizure).
@@ -58,28 +58,33 @@ void  operator delete[](void* p, size_t) noexcept { msvcrt_free(p); }
 //   0.9261 – 1.0000  ( 70 days)  CLOSED — renewed blockade [C2]
 //                                 (Mar 2 2026 – present)
 //
-// All knob defaults reproduce this timeline exactly.  Adjusting them
-// morphs the historical waveform into new rhythmic or timbral territory.
+// All knob defaults reproduce this timeline exactly at 947-day proportions.
 //
-// Controls:
-//   KNOT SPEED       pitch (V/OCT + SWELL FM)
-//   OPENING CEREMONY C1 closure phase start    (default: Apr 13 2024)
-//   STRAIT JACKET    C1 closure width           (default: 22 days)
-//   SANCTIONS        C2 closure phase start    (default: Mar 2 2026)
-//   EMBARGO          C2 closure width           (default: 70 days / ongoing)
-//   OIL SLICK        one-pole LP smooths square edges
-//   CHOKE POINT      tanh soft-clip with normalised gain
-//   PERSIAN TILT     shape inside closures: −1=ramp, 0=flat, +1=triangle
-//   TANKER           output level (1 = ±5 V peak)
-//   GULF/DRY         crossfade: 0=plain 50% square, 1=dual-closure wave
+// Controls (10 knobs, all RoundBlackKnob):
+//   knot speed       pitch (V/OCT + SWELL FM)
+//   opening ceremony C1 closure phase start    (default: Apr 13 2024)
+//   strait jacket    C1 closure width           (default: 22 days)
+//   sanctions        C2 closure phase start    (default: Mar 2 2026)
+//   embargo          C2 closure width           (default: 70 days)
+//   oil slick        one-pole LP smooths edges
+//   choke point      tanh soft-clip drive
+//   persian tilt     shape inside closures: −1=ramp, 0=flat, +1=triangle
+//   tanker           output level (1 = ±5 V peak)
+//   gulf/dry         crossfade: 0=plain 50% square, 1=dual-closure wave
 //
-// Inputs : V/OCT, TIDE (hard sync), SWELL (FM),
-//          OPEN (C1 start CV), LOCK (C2 start CV), TILT (Persian Tilt CV)
-//          TILT CV is shared — it shapes both C1 and C2 simultaneously.
-// Outputs: PASSAGE (audio ±5 V),  EOC (end-of-cycle trigger 10 V, 1 ms),
-//          C1 (closure-1 gate 10 V),  C2 (closure-2 gate 10 V)
+// Inputs (12):
+//   v/oct, tide (hard sync), swell (FM)
+//   open (C1 start CV), jckt (C1 width CV), lock (C2 start CV), emgo (C2 width CV)
+//   slck (oil slick CV), chok (choke point CV), tilt (persian tilt CV)
+//   tnk  (tanker CV), dry cv (gulf/dry CV)
+//   All parameter CVs: 0.1× per volt, clamped to valid range.
+//   TILT CV is shared — applies to both C1 and C2 simultaneously.
 //
-// Window overlap: C1 is checked first; if C1 and C2 overlap, C1 wins.
+// Outputs (4):
+//   passage (audio ±5 V),  eoc (end-of-cycle trigger 10 V, 1 ms),
+//   c1 (closure-1 gate 10 V),  c2 (closure-2 gate 10 V)
+//
+// Window overlap: C1 is checked first; C1 wins if windows share a phase region.
 // ---------------------------------------------------------------------------
 
 static constexpr float TWO_PI = 6.28318530717958647692f;
@@ -94,8 +99,6 @@ static constexpr float HORMUZ_C2_WIDTH =  70.f / 947.f; // 0.0739  ongoing (Mar 
 // DSP helpers
 // ---------------------------------------------------------------------------
 
-// Returns true when ph falls inside [start, start+width) (wrapping).
-// Sets local to normalised position within the window [0,1].
 static bool phaseInWindow(float ph, float start, float width, float& local) {
     float end = start + width;
     if (end <= 1.f) {
@@ -114,7 +117,6 @@ static bool phaseInWindow(float ph, float start, float width, float& local) {
     return false;
 }
 
-// Shapes the −1 closure value according to PERSIAN TILT.
 static float closureShape(float lp, float tilt) {
     if (tilt >= 0.f) {
         float tri = 1.f - 2.f * std::abs(lp - 0.5f);
@@ -144,12 +146,22 @@ struct WaveOfHormuz : Module {
     };
 
     enum InputId {
+        // pitch / sync
         VOCT_INPUT,
         TIDE_INPUT,
         SWELL_INPUT,
+        // closure CVs
         OPENING_CV_INPUT,
+        JACKET_CV_INPUT,
         LOCK_CV_INPUT,
+        EMBARGO_CV_INPUT,
+        // effect CVs
+        SLICK_CV_INPUT,
+        CHOKE_CV_INPUT,
         TILT_CV_INPUT,
+        TANKER_CV_INPUT,
+        // mix CV
+        DRY_CV_INPUT,
         INPUTS_LEN
     };
 
@@ -196,18 +208,24 @@ struct WaveOfHormuz : Module {
         configInput(VOCT_INPUT,       "V/Oct");
         configInput(TIDE_INPUT,       "Tide (hard sync)");
         configInput(SWELL_INPUT,      "Swell (FM)");
-        configInput(OPENING_CV_INPUT, "Opening Ceremony CV (C1 start)");
+        configInput(OPENING_CV_INPUT, "Open CV (C1 start)");
+        configInput(JACKET_CV_INPUT,  "Jacket CV (C1 width)");
         configInput(LOCK_CV_INPUT,    "Lock CV (C2 start)");
-        configInput(TILT_CV_INPUT,    "Tilt CV (Persian Tilt)");
+        configInput(EMBARGO_CV_INPUT, "Embargo CV (C2 width)");
+        configInput(SLICK_CV_INPUT,   "Slick CV (LP filter)");
+        configInput(CHOKE_CV_INPUT,   "Choke CV (tanh drive)");
+        configInput(TILT_CV_INPUT,    "Tilt CV (closure shape)");
+        configInput(TANKER_CV_INPUT,  "Tanker CV (output level)");
+        configInput(DRY_CV_INPUT,     "Dry CV (wet-dry mix)");
 
         configOutput(EOC_OUTPUT,     "End of Crossing (trigger)");
         configOutput(C1_GATE_OUTPUT, "Closure 1 gate");
         configOutput(C2_GATE_OUTPUT, "Closure 2 gate");
         configOutput(PASSAGE_OUTPUT, "Passage (audio)");
 
-        configLight(PASSAGE_LIGHT,  "Passage activity");
-        configLight(C1_GATE_LIGHT,  "Closure 1 active");
-        configLight(C2_GATE_LIGHT,  "Closure 2 active");
+        configLight(PASSAGE_LIGHT, "Passage activity");
+        configLight(C1_GATE_LIGHT, "Closure 1 active");
+        configLight(C2_GATE_LIGHT, "Closure 2 active");
     }
 
     void process(const ProcessArgs& args) override {
@@ -237,24 +255,35 @@ struct WaveOfHormuz : Module {
             }
         }
 
-        // --- C1 closure (OPEN CV: 0.1× per volt) ---
+        // --- C1 closure params ---
         float c1Start = params[OPENING_CEREMONY_PARAM].getValue();
         if (inputs[OPENING_CV_INPUT].isConnected())
             c1Start += inputs[OPENING_CV_INPUT].getVoltage() * 0.1f;
         c1Start = clamp(c1Start, 0.f, 1.f);
-        float c1Width = params[STRAIT_JACKET_PARAM].getValue();
 
-        // --- C2 closure (LOCK CV: 0.1× per volt) ---
+        float c1Width = params[STRAIT_JACKET_PARAM].getValue();
+        if (inputs[JACKET_CV_INPUT].isConnected())
+            c1Width = clamp(c1Width + inputs[JACKET_CV_INPUT].getVoltage() * 0.1f, 0.f, 1.f);
+
+        // --- C2 closure params ---
         float c2Start = params[SANCTIONS_PARAM].getValue();
         if (inputs[LOCK_CV_INPUT].isConnected())
             c2Start += inputs[LOCK_CV_INPUT].getVoltage() * 0.1f;
         c2Start = clamp(c2Start, 0.f, 1.f);
-        float c2Width = params[EMBARGO_PARAM].getValue();
 
-        // --- Persian Tilt (TILT CV: 0.2× per volt) ---
+        float c2Width = params[EMBARGO_PARAM].getValue();
+        if (inputs[EMBARGO_CV_INPUT].isConnected())
+            c2Width = clamp(c2Width + inputs[EMBARGO_CV_INPUT].getVoltage() * 0.1f, 0.f, 1.f);
+
+        // --- Persian Tilt (shared across C1 and C2) ---
         float tilt = params[PERSIAN_TILT_PARAM].getValue();
         if (inputs[TILT_CV_INPUT].isConnected())
             tilt = clamp(tilt + inputs[TILT_CV_INPUT].getVoltage() * 0.2f, -1.f, 1.f);
+
+        // --- Gulf/Dry mix ---
+        float mix = params[GULF_DRY_PARAM].getValue();
+        if (inputs[DRY_CV_INPUT].isConnected())
+            mix = clamp(mix + inputs[DRY_CV_INPUT].getVoltage() * 0.1f, 0.f, 1.f);
 
         // --- Dual-closure passage ---
         bool  inC1 = false, inC2 = false;
@@ -270,10 +299,13 @@ struct WaveOfHormuz : Module {
         }
 
         float dryWave = (phase < 0.5f) ? 1.f : -1.f;
-        float mixed   = crossfade(dryWave, wetWave, params[GULF_DRY_PARAM].getValue());
+        float mixed   = crossfade(dryWave, wetWave, mix);
 
-        // --- OIL SLICK: one-pole LP ---
+        // --- Oil Slick: one-pole LP ---
         float slick = params[OIL_SLICK_PARAM].getValue();
+        if (inputs[SLICK_CV_INPUT].isConnected())
+            slick = clamp(slick + inputs[SLICK_CV_INPUT].getVoltage() * 0.1f, 0.f, 1.f);
+
         if (slick > 0.001f) {
             float cutoff = dsp::FREQ_C4 * std::pow(2.f, (1.f - slick) * 8.f - 4.f);
             cutoff = clamp(cutoff, 20.f, args.sampleRate * 0.49f);
@@ -284,14 +316,22 @@ struct WaveOfHormuz : Module {
             lpState = mixed;
         }
 
-        // --- CHOKE POINT: tanh soft-clip ---
+        // --- Choke Point: tanh soft-clip ---
         float choke = params[CHOKE_POINT_PARAM].getValue();
+        if (inputs[CHOKE_CV_INPUT].isConnected())
+            choke = clamp(choke + inputs[CHOKE_CV_INPUT].getVoltage() * 0.1f, 0.f, 1.f);
+
         if (choke > 0.001f) {
             float drive = 1.f + choke * 9.f;
             mixed = std::tanh(mixed * drive) / std::tanh(drive);
         }
 
-        float out = mixed * params[TANKER_PARAM].getValue() * 5.f;
+        // --- Tanker: output level ---
+        float tanker = params[TANKER_PARAM].getValue();
+        if (inputs[TANKER_CV_INPUT].isConnected())
+            tanker = clamp(tanker + inputs[TANKER_CV_INPUT].getVoltage() * 0.1f, 0.f, 1.f);
+
+        float out = mixed * tanker * 5.f;
 
         if (eoc) eocPulse.trigger(1e-3f);
 
@@ -334,13 +374,14 @@ struct PanelText : Widget {
 };
 
 // ---------------------------------------------------------------------------
-// Widget  (14 HP = 71.12 mm)
+// Widget  (16 HP = 81.28 mm)
 //
-// 4-column knob layout:
-//   Columns x: 14.22, 28.44, 42.67, 56.89 mm   Centre: 35.56 mm
+// 4 columns  x: 10.16  30.48  50.80  71.12
+// knot speed x=20.32   gulf/dry x=60.96   (same row y=27, both RoundBlackKnob)
 //
-// 6 inputs  y=110  x: 7.62, 18.80, 29.98, 41.16, 52.34, 63.50
-// 4 outputs y=121  x: 14.22, 28.44, 42.67, 56.89
+// Closure knobs  y=53   Closure CVs  y=66
+// Effect  knobs  y=84   Effect  CVs  y=98
+// I/O inputs     y=111  Outputs      y=121
 // ---------------------------------------------------------------------------
 
 struct WaveOfHormuzWidget : ModuleWidget {
@@ -355,75 +396,89 @@ struct WaveOfHormuzWidget : ModuleWidget {
         addChild(createWidget<ScrewSilver>(
             Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-        // ── Knobs ────────────────────────────────────────────────────────
-        // KNOT SPEED (large, centred)
-        addParam(createParamCentered<RoundHugeBlackKnob>(
-            mm2px(Vec(35.56f, 25.0f)), module, WaveOfHormuz::KNOT_SPEED_PARAM));
+        // ── Knobs ────────────────────────────────────────────────────────────
+        // Top row: knot speed + gulf/dry — same size, same y
+        addParam(createParamCentered<RoundBlackKnob>(
+            mm2px(Vec(20.32f, 27.f)), module, WaveOfHormuz::KNOT_SPEED_PARAM));
+        addParam(createParamCentered<RoundBlackKnob>(
+            mm2px(Vec(60.96f, 27.f)), module, WaveOfHormuz::GULF_DRY_PARAM));
 
-        // Closure row  y=47
+        // Closure row  y=53
         addParam(createParamCentered<RoundBlackKnob>(
-            mm2px(Vec(14.22f, 47.0f)), module, WaveOfHormuz::OPENING_CEREMONY_PARAM));
+            mm2px(Vec(10.16f, 53.f)), module, WaveOfHormuz::OPENING_CEREMONY_PARAM));
         addParam(createParamCentered<RoundBlackKnob>(
-            mm2px(Vec(28.44f, 47.0f)), module, WaveOfHormuz::STRAIT_JACKET_PARAM));
+            mm2px(Vec(30.48f, 53.f)), module, WaveOfHormuz::STRAIT_JACKET_PARAM));
         addParam(createParamCentered<RoundBlackKnob>(
-            mm2px(Vec(42.67f, 47.0f)), module, WaveOfHormuz::SANCTIONS_PARAM));
+            mm2px(Vec(50.80f, 53.f)), module, WaveOfHormuz::SANCTIONS_PARAM));
         addParam(createParamCentered<RoundBlackKnob>(
-            mm2px(Vec(56.89f, 47.0f)), module, WaveOfHormuz::EMBARGO_PARAM));
+            mm2px(Vec(71.12f, 53.f)), module, WaveOfHormuz::EMBARGO_PARAM));
 
-        // Effects row  y=71
+        // Effect row  y=84
         addParam(createParamCentered<RoundBlackKnob>(
-            mm2px(Vec(14.22f, 71.0f)), module, WaveOfHormuz::OIL_SLICK_PARAM));
+            mm2px(Vec(10.16f, 84.f)), module, WaveOfHormuz::OIL_SLICK_PARAM));
         addParam(createParamCentered<RoundBlackKnob>(
-            mm2px(Vec(28.44f, 71.0f)), module, WaveOfHormuz::CHOKE_POINT_PARAM));
+            mm2px(Vec(30.48f, 84.f)), module, WaveOfHormuz::CHOKE_POINT_PARAM));
         addParam(createParamCentered<RoundBlackKnob>(
-            mm2px(Vec(42.67f, 71.0f)), module, WaveOfHormuz::PERSIAN_TILT_PARAM));
+            mm2px(Vec(50.80f, 84.f)), module, WaveOfHormuz::PERSIAN_TILT_PARAM));
         addParam(createParamCentered<RoundBlackKnob>(
-            mm2px(Vec(56.89f, 71.0f)), module, WaveOfHormuz::TANKER_PARAM));
+            mm2px(Vec(71.12f, 84.f)), module, WaveOfHormuz::TANKER_PARAM));
 
-        // GULF/DRY (small, centred)
-        addParam(createParamCentered<RoundSmallBlackKnob>(
-            mm2px(Vec(35.56f, 93.0f)), module, WaveOfHormuz::GULF_DRY_PARAM));
+        // ── Closure CV inputs  y=66 ──────────────────────────────────────────
+        addInput(createInputCentered<PJ301MPort>(
+            mm2px(Vec(10.16f, 66.f)), module, WaveOfHormuz::OPENING_CV_INPUT));
+        addInput(createInputCentered<PJ301MPort>(
+            mm2px(Vec(30.48f, 66.f)), module, WaveOfHormuz::JACKET_CV_INPUT));
+        addInput(createInputCentered<PJ301MPort>(
+            mm2px(Vec(50.80f, 66.f)), module, WaveOfHormuz::LOCK_CV_INPUT));
+        addInput(createInputCentered<PJ301MPort>(
+            mm2px(Vec(71.12f, 66.f)), module, WaveOfHormuz::EMBARGO_CV_INPUT));
 
-        // ── Inputs  (6, y=110) ───────────────────────────────────────────
+        // ── Effect CV inputs  y=98 ───────────────────────────────────────────
         addInput(createInputCentered<PJ301MPort>(
-            mm2px(Vec( 7.62f, 110.0f)), module, WaveOfHormuz::VOCT_INPUT));
+            mm2px(Vec(10.16f, 98.f)), module, WaveOfHormuz::SLICK_CV_INPUT));
         addInput(createInputCentered<PJ301MPort>(
-            mm2px(Vec(18.80f, 110.0f)), module, WaveOfHormuz::TIDE_INPUT));
+            mm2px(Vec(30.48f, 98.f)), module, WaveOfHormuz::CHOKE_CV_INPUT));
         addInput(createInputCentered<PJ301MPort>(
-            mm2px(Vec(29.98f, 110.0f)), module, WaveOfHormuz::SWELL_INPUT));
+            mm2px(Vec(50.80f, 98.f)), module, WaveOfHormuz::TILT_CV_INPUT));
         addInput(createInputCentered<PJ301MPort>(
-            mm2px(Vec(41.16f, 110.0f)), module, WaveOfHormuz::OPENING_CV_INPUT));
-        addInput(createInputCentered<PJ301MPort>(
-            mm2px(Vec(52.34f, 110.0f)), module, WaveOfHormuz::LOCK_CV_INPUT));
-        addInput(createInputCentered<PJ301MPort>(
-            mm2px(Vec(63.50f, 110.0f)), module, WaveOfHormuz::TILT_CV_INPUT));
+            mm2px(Vec(71.12f, 98.f)), module, WaveOfHormuz::TANKER_CV_INPUT));
 
-        // ── Outputs  (4, y=121) ──────────────────────────────────────────
+        // ── I/O inputs  y=111 ───────────────────────────────────────────────
+        addInput(createInputCentered<PJ301MPort>(
+            mm2px(Vec(10.16f, 111.f)), module, WaveOfHormuz::VOCT_INPUT));
+        addInput(createInputCentered<PJ301MPort>(
+            mm2px(Vec(30.48f, 111.f)), module, WaveOfHormuz::TIDE_INPUT));
+        addInput(createInputCentered<PJ301MPort>(
+            mm2px(Vec(50.80f, 111.f)), module, WaveOfHormuz::SWELL_INPUT));
+        addInput(createInputCentered<PJ301MPort>(
+            mm2px(Vec(71.12f, 111.f)), module, WaveOfHormuz::DRY_CV_INPUT));
+
+        // ── Outputs  y=121 ──────────────────────────────────────────────────
         addOutput(createOutputCentered<PJ301MPort>(
-            mm2px(Vec(14.22f, 121.0f)), module, WaveOfHormuz::EOC_OUTPUT));
+            mm2px(Vec(10.16f, 121.f)), module, WaveOfHormuz::EOC_OUTPUT));
         addOutput(createOutputCentered<PJ301MPort>(
-            mm2px(Vec(28.44f, 121.0f)), module, WaveOfHormuz::C1_GATE_OUTPUT));
+            mm2px(Vec(30.48f, 121.f)), module, WaveOfHormuz::C1_GATE_OUTPUT));
         addOutput(createOutputCentered<PJ301MPort>(
-            mm2px(Vec(42.67f, 121.0f)), module, WaveOfHormuz::C2_GATE_OUTPUT));
+            mm2px(Vec(50.80f, 121.f)), module, WaveOfHormuz::C2_GATE_OUTPUT));
         addOutput(createOutputCentered<PJ301MPort>(
-            mm2px(Vec(56.89f, 121.0f)), module, WaveOfHormuz::PASSAGE_OUTPUT));
+            mm2px(Vec(71.12f, 121.f)), module, WaveOfHormuz::PASSAGE_OUTPUT));
 
-        // ── Activity lights ──────────────────────────────────────────────
+        // ── Activity lights  y=117 ──────────────────────────────────────────
         addChild(createLightCentered<SmallLight<GreenLight>>(
-            mm2px(Vec(56.89f, 116.0f)), module, WaveOfHormuz::PASSAGE_LIGHT));
+            mm2px(Vec(71.12f, 117.f)), module, WaveOfHormuz::PASSAGE_LIGHT));
         addChild(createLightCentered<SmallLight<YellowLight>>(
-            mm2px(Vec(28.44f, 116.0f)), module, WaveOfHormuz::C1_GATE_LIGHT));
+            mm2px(Vec(30.48f, 117.f)), module, WaveOfHormuz::C1_GATE_LIGHT));
         addChild(createLightCentered<SmallLight<RedLight>>(
-            mm2px(Vec(42.67f, 116.0f)), module, WaveOfHormuz::C2_GATE_LIGHT));
+            mm2px(Vec(50.80f, 117.f)), module, WaveOfHormuz::C2_GATE_LIGHT));
 
-        // ── Text labels ──────────────────────────────────────────────────
-        // NanoSVG ignores <text> elements; all labels drawn via PanelText.
+        // ── Text labels ──────────────────────────────────────────────────────
+        // NanoSVG drops all <text> nodes; labels are drawn here via PanelText.
         NVGcolor cG = nvgRGB(0xe8, 0xc0, 0x34); // gold        (title)
-        NVGcolor cP = nvgRGB(0x8e, 0xcf, 0xcf); // light teal  (primary knob names)
-        NVGcolor cS = nvgRGB(0x5a, 0x8a, 0x9a); // muted teal  (jack names, sub-labels)
-        NVGcolor cD = nvgRGB(0x3a, 0x68, 0x78); // dim teal    (range / secondary)
+        NVGcolor cP = nvgRGB(0x8e, 0xcf, 0xcf); // light teal  (knob names)
+        NVGcolor cS = nvgRGB(0x5a, 0x8a, 0x9a); // muted teal  (jack names)
+        NVGcolor cD = nvgRGB(0x3a, 0x68, 0x78); // dim teal    (range / cv labels)
 
-        // Helper: PanelText centred at (cx_mm, cy_mm), width wmm
+        // wmm: edge cols (1,4) capped at 17 to stay inside rails
         auto L = [&](float cx, float cy, const char* txt, float fs, NVGcolor c,
                      float wmm = 20.f) {
             float hPx = fs + 2.f;
@@ -438,78 +493,81 @@ struct WaveOfHormuzWidget : ModuleWidget {
         };
 
         // Title
-        L(35.56f,  6.2f, "THE WAVE OF HORMUZ",   8.f, cG, 66.f);
+        L(40.64f,  6.2f, "the wave of hormuz",   8.f, cG, 76.f);
 
-        // KNOT SPEED
-        L(35.56f, 19.3f, "KNOT SPEED",           10.f, cP, 30.f);
-        L(13.0f,  25.0f, "-4 OCT",                7.f, cD, 14.f);
-        L(58.1f,  25.0f, "+4 OCT",                7.f, cD, 14.f);
+        // Top row: knot speed
+        L(20.32f, 20.5f, "knot speed",            9.f, cP, 24.f);
+        L( 7.0f,  33.0f, "-4 oct",                7.f, cD, 14.f);
+        L(33.5f,  33.0f, "+4 oct",                7.f, cD, 14.f);
 
-        // Closure row header
-        L(35.56f, 37.0f, "- CLOSURE WINDOWS -",   6.f, cD, 46.f);
+        // Top row: gulf/dry
+        L(60.96f, 20.5f, "gulf / dry",            9.f, cP, 24.f);
+        L(48.5f,  33.0f, "dry",                   7.f, cD, 10.f);
+        L(73.5f,  33.0f, "wet",                   7.f, cD, 10.f);
 
-        // Closure row knob labels  (y=47)
-        L(14.22f, 39.2f, "OPENING",               9.f, cP);
-        L(14.22f, 42.2f, "CEREMONY",              9.f, cP);
-        L(14.22f, 54.5f, "c1 start",              7.f, cS);
+        // Closure section header
+        L(40.64f, 39.0f, "- closure windows -",   6.f, cD, 50.f);
 
-        L(28.44f, 39.2f, "STRAIT",                9.f, cP);
-        L(28.44f, 42.2f, "JACKET",                9.f, cP);
-        L(28.44f, 54.5f, "c1 width",              7.f, cS);
+        // Closure knob labels
+        L(10.16f, 43.0f, "opening",               8.f, cP, 17.f);
+        L(10.16f, 46.3f, "ceremony",              8.f, cP, 17.f);
+        L(10.16f, 60.5f, "c1 start",              7.f, cS, 17.f);
 
-        L(42.67f, 40.0f, "SANCTIONS",             9.f, cP);
-        L(42.67f, 54.5f, "c2 start",              7.f, cS);
+        L(30.48f, 43.0f, "strait",                8.f, cP, 20.f);
+        L(30.48f, 46.3f, "jacket",                8.f, cP, 20.f);
+        L(30.48f, 60.5f, "c1 width",              7.f, cS, 20.f);
 
-        L(56.89f, 40.0f, "EMBARGO",               9.f, cP);
-        L(56.89f, 54.5f, "c2 width",              7.f, cS);
+        L(50.80f, 44.7f, "sanctions",             8.f, cP, 20.f);
+        L(50.80f, 60.5f, "c2 start",              7.f, cS, 20.f);
 
-        // Effects row knob labels  (y=71)
-        L(14.22f, 60.0f, "OIL SLICK",             9.f, cP);
-        L(14.22f, 78.5f, "slew / LP",             7.f, cS);
+        L(71.12f, 44.7f, "embargo",               8.f, cP, 17.f);
+        L(71.12f, 60.5f, "c2 width",              7.f, cS, 17.f);
 
-        L(28.44f, 60.0f, "CHOKE",                 9.f, cP);
-        L(28.44f, 63.0f, "POINT",                 9.f, cP);
-        L(28.44f, 78.5f, "tanh drive",            7.f, cS);
+        // Closure CV labels
+        L(10.16f, 63.2f, "open",                  6.f, cD, 17.f);
+        L(30.48f, 63.2f, "jckt",                  6.f, cD, 20.f);
+        L(50.80f, 63.2f, "lock",                  6.f, cD, 20.f);
+        L(71.12f, 63.2f, "emgo",                  6.f, cD, 17.f);
 
-        L(42.67f, 60.0f, "PERSIAN",               9.f, cP);
-        L(42.67f, 63.0f, "TILT",                  9.f, cP);
-        L(42.67f, 78.5f, "saw \xc2\xab tri",      7.f, cS);
+        // Effect knob labels
+        L(10.16f, 74.0f, "oil",                   8.f, cP, 17.f);
+        L(10.16f, 77.3f, "slick",                 8.f, cP, 17.f);
+        L(10.16f, 91.5f, "slew / lp",             7.f, cS, 17.f);
 
-        L(56.89f, 60.0f, "TANKER",                9.f, cP);
-        L(56.89f, 78.5f, "amplitude",             7.f, cS);
+        L(30.48f, 74.0f, "choke",                 8.f, cP, 20.f);
+        L(30.48f, 77.3f, "point",                 8.f, cP, 20.f);
+        L(30.48f, 91.5f, "tanh drive",            7.f, cS, 20.f);
 
-        // GULF / DRY
-        L(35.56f, 84.5f, "GULF / DRY",            9.f, cP, 34.f);
-        L(20.5f,  93.0f, "DRY",                   7.f, cD, 12.f);
-        L(50.6f,  93.0f, "WET",                   7.f, cD, 12.f);
+        L(50.80f, 74.0f, "persian",               8.f, cP, 20.f);
+        L(50.80f, 77.3f, "tilt",                  8.f, cP, 20.f);
+        L(50.80f, 91.5f, "saw \xc2\xab tri",      7.f, cS, 20.f);
 
-        // Input jack labels  (y=110)
-        L( 7.62f, 106.5f, "V/OCT",                8.f, cS, 13.f);
-        L(18.80f, 106.5f, "TIDE",                  8.f, cS, 13.f);
-        L(29.98f, 106.5f, "SWELL",                 8.f, cS, 13.f);
-        L(41.16f, 106.5f, "OPEN",                  8.f, cS, 13.f);
-        L(52.34f, 106.5f, "LOCK",                  8.f, cS, 13.f);
-        L(63.50f, 106.5f, "TILT",                  8.f, cS, 13.f);
+        L(71.12f, 75.7f, "tanker",                8.f, cP, 17.f);
+        L(71.12f, 91.5f, "amplitude",             7.f, cS, 17.f);
 
-        // Input sub-labels
-        L( 7.62f, 115.0f, "pitch",                 7.f, cD, 13.f);
-        L(18.80f, 115.0f, "sync",                  7.f, cD, 13.f);
-        L(29.98f, 115.0f, "fm",                    7.f, cD, 13.f);
-        L(41.16f, 115.0f, "c1 cv",                 7.f, cD, 13.f);
-        L(52.34f, 115.0f, "c2 cv",                 7.f, cD, 13.f);
-        L(63.50f, 115.0f, "shp cv",                7.f, cD, 13.f);
+        // Effect CV labels
+        L(10.16f, 94.7f, "slck",                  6.f, cD, 17.f);
+        L(30.48f, 94.7f, "chok",                  6.f, cD, 20.f);
+        L(50.80f, 94.7f, "tilt",                  6.f, cD, 20.f);
+        L(71.12f, 94.7f, "tnk",                   6.f, cD, 17.f);
 
-        // Output secondary labels (above output jacks)
-        L(14.22f, 117.5f, "trig",                  7.f, cD, 13.f);
-        L(28.44f, 117.5f, "gate",                  7.f, cD, 13.f);
-        L(42.67f, 117.5f, "gate",                  7.f, cD, 13.f);
-        L(56.89f, 117.5f, "audio",                 7.f, cD, 13.f);
+        // I/O input labels
+        L(10.16f, 105.5f, "v/oct",                8.f, cS, 17.f);
+        L(30.48f, 105.5f, "tide",                 8.f, cS, 20.f);
+        L(50.80f, 105.5f, "swell",                8.f, cS, 20.f);
+        L(71.12f, 105.5f, "dry cv",               8.f, cS, 17.f);
 
-        // Output primary labels (below output jacks)
-        L(14.22f, 125.5f, "EOC",                   8.f, cS, 13.f);
-        L(28.44f, 125.5f, "C1",                    8.f, cS, 13.f);
-        L(42.67f, 125.5f, "C2",                    8.f, cS, 13.f);
-        L(56.89f, 125.5f, "PASSAGE",               8.f, cP, 18.f);
+        // Output type labels (above jacks)
+        L(10.16f, 116.5f, "trig",                 7.f, cD, 17.f);
+        L(30.48f, 116.5f, "gate",                 7.f, cD, 20.f);
+        L(50.80f, 116.5f, "gate",                 7.f, cD, 20.f);
+        L(71.12f, 116.5f, "audio",                7.f, cD, 17.f);
+
+        // Output name labels (below jacks)
+        L(10.16f, 125.5f, "eoc",                  8.f, cS, 17.f);
+        L(30.48f, 125.5f, "c1",                   8.f, cS, 20.f);
+        L(50.80f, 125.5f, "c2",                   8.f, cS, 20.f);
+        L(71.12f, 125.5f, "passage",              8.f, cP, 17.f);
     }
 };
 

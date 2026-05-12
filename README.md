@@ -1,5 +1,11 @@
 # The Wave of Hormuz
 
+<p align="center">
+  <img src="waveofhormuz.png" height="380" alt="Panel artwork"/>
+  &nbsp;&nbsp;&nbsp;
+  <img src="woh_vcv.png" height="380" alt="Running in VCV Rack 2"/>
+</p>
+
 A VCV Rack 2 oscillator that encodes the 2023–2026 Strait of Hormuz conflict as a dual-closure square wave. The waveform is always **+1 (OPEN / free transit)** except during the two programmed closure windows, where it drops to **−1 (CLOSED / blockade)**. Every knob name is a pun on the Strait.
 
 Default parameters reproduce the real conflict timeline at **data-accurate proportions** — **947 days** from Oct 7 2023 to May 11 2026 — with all knob defaults set so the unmodified module plays the historical square wave exactly:
@@ -12,12 +18,6 @@ Default parameters reproduce the real conflict timeline at **data-accurate propo
 | 0.926 – 1.000 | 70 | **CLOSED** — Renewed blockade (Mar 2 2026 – present) |
 
 The panel waveform graphic shows these proportions accurately: the first closure appears as a hairline notch (~1.5 mm at panel scale); the second as a solid block at the right edge.
-
-<p align="center">
-  <img src="res/WaveOfHormuz.svg" height="380" alt="Panel artwork"/>
-  &nbsp;&nbsp;&nbsp;
-  <img src="waveofhormuz.png" height="380" alt="Running in VCV Rack 2"/>
-</p>
 
 ---
 

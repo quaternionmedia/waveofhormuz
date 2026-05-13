@@ -1,15 +1,20 @@
+---
+title: The Wave of Hormuz
+layout: default
+---
+
 # The Wave of Hormuz
 
-<p align="center">
+<div class="screenshots">
   <figure>
-    <img src="waveofhormuz.png" height="360" alt="16 HP panel — dark-navy / teal / gold"/>
-    <figcaption><em>16 HP panel — dark-navy / teal / gold</em></figcaption>
+    <img src="waveofhormuz.png" alt="16 HP panel — dark-navy / teal / gold"/>
+    <figcaption>16 HP panel — dark-navy / teal / gold</figcaption>
   </figure>
   <figure>
-    <img src="woh_vcv.png" width="640" alt="Patched in VCV Rack 2"/>
-    <figcaption><em>Patched in VCV Rack 2</em></figcaption>
+    <img src="woh_vcv.png" alt="Patched in VCV Rack 2"/>
+    <figcaption>Patched in VCV Rack 2</figcaption>
   </figure>
-</p>
+</div>
 
 A VCV Rack 2 oscillator that encodes the 2023–2026 Strait of Hormuz conflict as a dual-closure square wave. The waveform is always **+1 (OPEN / free transit)** except during the two programmed closure windows, where it drops to **−1 (CLOSED / blockade)**. Every knob name is a pun on the Strait.
 
@@ -71,11 +76,10 @@ Restart VCV Rack to pick up the updated plugin.
 | Symptom | Cause | Fix |
 |---|---|---|
 | `install` fails: *device or resource busy* | VCV Rack is running and has `plugin.dll` locked | Close Rack, then re-run `./build.sh install` |
-| `jq` warnings during build (`pipe: No error`) | `jq` is not installed; `plugin.mk` tries to read SLUG/VERSION from it | Safe to ignore — `build.sh` passes both values directly via `MAKE_FLAGS`; install `jq` with `choco install jq` to silence it |
-| Silent `Error 1` compile failure, no diagnostic shown | `make` found Git's `sh.exe` as its shell; that shell's PATH excludes MSYS2, so `g++` can't find its own standard-library headers | `build.sh` now passes `SHELL=/c/msys64/usr/bin/bash` to `make` automatically when MSYS2 is present — always build via `./build.sh` rather than bare `make` |
-| Compiler errors don't appear in terminal output | On Windows, `make`'s stderr from `g++` can be swallowed by the Git shell | Run the failing `g++` command directly in **PowerShell** (`& g++ ... 2>&1`) to see full diagnostics |
-| Module crashes Rack on load | Wrong CRT in the build toolchain (UCRT vs MSVCRT) | Use the MSYS2 **MINGW64** shell, not UCRT64 or Chocolatey MinGW. `build.sh` prefers `/c/msys64/mingw64/bin` |
-| Closure windows overlap | C1 always takes priority over C2 in the DSP when the windows share a phase region | Intended — dial the windows apart; opening ceremony + strait jacket must not overlap sanctions |
+| `jq` warnings during build (`pipe: No error`) | `jq` is not installed | Safe to ignore — install with `choco install jq` to silence |
+| Silent `Error 1` compile failure | `make` found Git's `sh.exe` as its shell | Always build via `./build.sh` rather than bare `make` |
+| Module crashes Rack on load | Wrong CRT in the build toolchain (UCRT vs MSVCRT) | Use the MSYS2 **MINGW64** shell, not UCRT64 or Chocolatey MinGW |
+| Closure windows overlap | C1 takes priority over C2 when windows share a phase region | Intended — dial the windows apart |
 
 ---
 
@@ -84,8 +88,6 @@ Restart VCV Rack to pick up the updated plugin.
 **16 HP.** One module: *The Wave of Hormuz*. All panel labels are lowercase.
 
 ### Knobs
-
-All 10 knobs are the same size. **knot speed** and **gulf / dry** share the top row.
 
 | Label | Range | Default | Pun | Function |
 |---|---|---|---|---|
@@ -102,22 +104,22 @@ All 10 knobs are the same size. **knot speed** and **gulf / dry** share the top 
 
 ### Inputs
 
-12 inputs total. All parameter CVs add 0.1× per volt and are clamped to the knob's valid range, except **tilt** (0.2×/V, clamped ±1).
+All parameter CVs add 0.1× per volt and are clamped to the knob's valid range, except **tilt** (0.2×/V, clamped ±1).
 
-| Jack | Location | Signal | Function |
-|---|---|---|---|
-| **v/oct** | I/O row | ±5 V | 1 V/oct pitch CV |
-| **tide** | I/O row | Gate/Trig | Hard sync — rising edge resets phase to 0 |
-| **swell** | I/O row | ±5 V | FM — adds ¼ V/oct per volt to pitch |
-| **dry cv** | I/O row | ±5 V | CV for gulf / dry mix |
-| **open** | Closure CV row | ±5 V | CV for opening ceremony (C1 start) |
-| **jckt** | Closure CV row | ±5 V | CV for strait jacket (C1 width) |
-| **lock** | Closure CV row | ±5 V | CV for sanctions (C2 start) |
-| **emgo** | Closure CV row | ±5 V | CV for embargo (C2 width) |
-| **slck** | Effect CV row | ±5 V | CV for oil slick (LP filter) |
-| **chok** | Effect CV row | ±5 V | CV for choke point (tanh drive) |
-| **tilt** | Effect CV row | ±5 V | CV for persian tilt — applies to **both** C1 and C2 |
-| **tnk** | Effect CV row | ±5 V | CV for tanker (output level) |
+| Jack | Signal | Function |
+|---|---|---|
+| **v/oct** | ±5 V | 1 V/oct pitch CV |
+| **tide** | Gate/Trig | Hard sync — rising edge resets phase to 0 |
+| **swell** | ±5 V | FM — adds ¼ V/oct per volt to pitch |
+| **dry cv** | ±5 V | CV for gulf / dry mix |
+| **open** | ±5 V | CV for opening ceremony (C1 start) |
+| **jckt** | ±5 V | CV for strait jacket (C1 width) |
+| **lock** | ±5 V | CV for sanctions (C2 start) |
+| **emgo** | ±5 V | CV for embargo (C2 width) |
+| **slck** | ±5 V | CV for oil slick (LP filter) |
+| **chok** | ±5 V | CV for choke point (tanh drive) |
+| **tilt** | ±5 V | CV for persian tilt — applies to both C1 and C2 |
+| **tnk** | ±5 V | CV for tanker (output level) |
 
 ### Outputs
 
@@ -134,17 +136,15 @@ All 10 knobs are the same size. **knot speed** and **gulf / dry** share the top 
 
 ### Why there is a CRT heap bridge
 
-`libRack.dll` (shipped with VCV Rack 2) is compiled against **MSVCRT** (`msvcrt.dll`), which uses its own private heap. Modern MSYS2 MinGW64 defaults to **UCRT** (`ucrtbase.dll`), a separate private heap.
+`libRack.dll` is compiled against **MSVCRT** (`msvcrt.dll`), which uses its own private heap. Modern MSYS2 MinGW64 defaults to **UCRT** (`ucrtbase.dll`), a separate private heap.
 
 At runtime Rack calls `delete` on widgets our plugin allocates with `new`. Because `new` used UCRT's `malloc` but `delete` reaches MSVCRT's `free`, the two heap handles don't match and `RtlFreeHeap` crashes with signal 11.
 
-The fix at the top of `src/WaveOfHormuz.cpp` overrides global `operator new` / `operator delete` to load `msvcrt.dll` at startup via `LoadLibrary` and call its `malloc`/`free` directly. All plugin allocations then live on the MSVCRT heap that Rack expects.
+The fix at the top of `src/WaveOfHormuz.cpp` overrides global `operator new` / `operator delete` to load `msvcrt.dll` at startup via `LoadLibrary` and call its `malloc`/`free` directly.
 
 ### Why labels are drawn in C++ rather than SVG
 
-NanoSVG (the Rack SVG renderer) silently discards all `<text>` elements. The `res/WaveOfHormuz.svg` file contains `<text>` nodes for layout reference only. All visible text is rendered programmatically via the `PanelText` widget in `src/WaveOfHormuz.cpp`.
-
-`ui::Label` was tried first but also crashes: its constructor (in `libRack.dll`) initialises a `std::string text` member using MSVCRT's allocator; assigning to that field from plugin code calls the UCRT-based copy of `std::string::operator=`, which tries to free the old buffer through the wrong heap. `PanelText` avoids this entirely by holding only a `const char*` to a string literal.
+NanoSVG (the Rack SVG renderer) silently discards all `<text>` elements. All visible text is rendered programmatically via the `PanelText` widget in `src/WaveOfHormuz.cpp`.
 
 ---
 

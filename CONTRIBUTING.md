@@ -74,10 +74,16 @@ workaround — see `.github/workflows/build.yml`.
 | Workflow | File | Trigger | What it does |
 |---|---|---|---|
 | CI build | [`.github/workflows/build.yml`](.github/workflows/build.yml) | Every push to `main`, every PR | Builds against Rack SDK 2.6.6 (Linux), packages `.vcvplugin`, uploads as a run artifact |
-| GitHub Pages | [`.github/workflows/pages.yml`](.github/workflows/pages.yml) | Every push to `main` | Deploys README as the plugin website at <https://quaternionmedia.github.io/waveofhormuz> |
+| GitHub Pages | [`.github/workflows/pages.yml`](.github/workflows/pages.yml) | Every push to `main` | Deploys [`index.md`](index.md) as the plugin website at <https://quaternionmedia.github.io/waveofhormuz> |
 
 **One-time setup for GitHub Pages:** In the repo Settings → Pages → Source,
 select **"GitHub Actions"** (not "Deploy from a branch").
+
+**Keeping `index.md` in sync with `README.md`:** `index.md` is the Pages site
+version of the README. It mirrors the content of `README.md` but wraps the
+screenshots in `<div class="screenshots">` for CSS targeting. When editing
+module reference tables, build notes, or other prose in `README.md`, apply the
+same change to `index.md`.
 
 ---
 

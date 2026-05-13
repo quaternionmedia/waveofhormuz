@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  RACK_SDK_VERSION: 2.6.6
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Rack SDK
+        run: |
+          wget -q "https://vcvrack.com/downloads/Rack-SDK-${RACK_SDK_VERSION}-lin-x64.zip"
+          unzip -q "Rack-SDK-${RACK_SDK_VERSION}-lin-x64.zip"
+
+      - name: Build
+        run: make -j$(nproc) RACK_DIR="$PWD/Rack-SDK"
+
+      - name: Package
+        run: make dist RACK_DIR="$PWD/Rack-SDK"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WaveOfHormuz-${{ github.sha }}-lin
+          path: dist/*.vcvplugin
+          if-no-files-found: error

@@ -332,6 +332,7 @@ struct WaveOfHormuz : Module {
             tanker = clamp(tanker + inputs[TANKER_CV_INPUT].getVoltage() * 0.1f, 0.f, 1.f);
 
         float out = mixed * tanker * 5.f;
+        if (!std::isfinite(out)) out = 0.f;
 
         if (eoc) eocPulse.trigger(1e-3f);
 
